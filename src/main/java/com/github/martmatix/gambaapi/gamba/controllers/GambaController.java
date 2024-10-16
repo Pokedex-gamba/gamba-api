@@ -74,7 +74,7 @@ public class GambaController {
                         -----END PUBLIC KEY-----
                         """);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            return ErrorCodes.TOKEN_EXTRACTION_ERROR.getCode();
         }
 
         Claims claims = Jwts.parser()
@@ -83,7 +83,12 @@ public class GambaController {
                 .parseSignedClaims(token)
                 .getPayload();
 
-        return claims.get("user_id", String.class);
+        String userId = claims.get("user_id", String.class);
+        if (userId == null) {
+            return ErrorCodes.TOKEN_EXTRACTION_ERROR.getCode();
+        }
+
+        return userId;
     }
 
     @Autowired

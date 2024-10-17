@@ -1,7 +1,7 @@
 version: "3.7"
 
 services:
-  app:
+  gamba-api:
     image: ghcr.io/pokedex-gamba/gamba-api:latest-x86_64
     build:
       context: .
@@ -12,12 +12,15 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/pokemon_gamba
       - SPRING_DATASOURCE_USERNAME=root
       - SPRING_DATASOURCE_PASSWORD=password
+      - POKEMON_API_URL=http://host.docker.internal:8888
     depends_on:
       - db
     volumes:
       - ./target:/app
       - ./decoding_key:/decoding_key
     command: ["java", "-jar", "/app/app.jar"]
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
   db:
     image: mysql:8.0

@@ -18,11 +18,15 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.security.PublicKey;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 @RestController
 public class GambaController {
@@ -47,6 +51,9 @@ public class GambaController {
             if (userId.equals(ErrorCodes.TOKEN_EXTRACTION_ERROR.getCode())) {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("{\"error\": \"Unable To Process Request: " + ErrorCodes.TOKEN_EXTRACTION_ERROR.getCode() + "\"}");
             }
+            if (userId.equals(ErrorCodes.PUBLIC_NOT_FOUND.getCode())) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("{\"error\": \"Unable To Process Request: " + ErrorCodes.PUBLIC_NOT_FOUND.getCode() + "\"}");
+            }
 
             GambaEntity gamba = createRandomGamba(userId, pokemons.get(0).getName(), pokemons.get(0));
             gambaService.saveGamba(gamba);
@@ -65,6 +72,9 @@ public class GambaController {
             String userId = getUserIdFromToken(authHeader);
             if (userId.equals(ErrorCodes.TOKEN_EXTRACTION_ERROR.getCode())) {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("{\"error\": \"Unable To Process Request: " + ErrorCodes.TOKEN_EXTRACTION_ERROR.getCode() + "\"}");
+            }
+            if (userId.equals(ErrorCodes.PUBLIC_NOT_FOUND.getCode())) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("{\"error\": \"Unable To Process Request: " + ErrorCodes.PUBLIC_NOT_FOUND.getCode() + "\"}");
             }
 
             List<GambaEntity> gambaByUserId = gambaService.getGambaByUserId(userId);
@@ -114,11 +124,15 @@ public class GambaController {
 
         PublicKey publicKey;
         try {
-            publicKey = keyLoaderService.getPublicKey("""
-                        -----BEGIN PUBLIC KEY-----
-                    MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAvLpTEski8k6IpKntmaXA4Pg4LfW1kmYaK5Y+UctOoaKssyUIE+nZ2dEx4KtAIqsiERsKGUOfxJdxDGS0urmkxVXRnhbyOdAfflOMGEcE8sQYnNHillyvUtMACJw9/GzS7v8k+i18lPXv16b3oUXEt+sBoRSuJYGxE16sxVNdyyFECle6wbobL9Py6sIEYuIpwH0ozumRR+LSrJGjnWR2JDziGBvOmL+4x/RYHplCHzcdCvBjLZS4hMSSfYY3nCtfpWEvfIbr604aA0WT9ZfHJSnXpE9Cy77BYVkRYcb32zjnkXJ7yUJpXjVgdI/gtUi60pjYt+FhNq/SDe+xH11/0QIDAQAB
-                        -----END PUBLIC KEY-----
-                        """);
+            String path = GambaController.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
+            File publicKeyFile = new File(path, "decoding_key");
+            if (!publicKeyFile.exists()) {
+                return ErrorCodes.PUBLIC_NOT_FOUND.getCode();
+            }
+            BufferedReader reader = new BufferedReader(new FileReader(publicKeyFile));
+            String publicKeyContent = reader.lines().collect(Collectors.joining("\n"));
+            reader.close();
+            publicKey = keyLoaderService.getPublicKey(publicKeyContent);
         } catch (Exception e) {
             return ErrorCodes.TOKEN_EXTRACTION_ERROR.getCode();
         }

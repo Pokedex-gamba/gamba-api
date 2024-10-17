@@ -59,6 +59,21 @@ public class GambaController {
         }
     }
 
+    @GetMapping(path = "/pokemon/gamba/getUserGamba")
+    public ResponseEntity<?> getUserGamba(@RequestHeader("Authorization") String authHeader) {
+        try {
+            String userId = getUserIdFromToken(authHeader);
+            if (userId.equals(ErrorCodes.TOKEN_EXTRACTION_ERROR.getCode())) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("{\"error\": \"Unable To Process Request: " + ErrorCodes.TOKEN_EXTRACTION_ERROR.getCode() + "\"}");
+            }
+
+            List<GambaEntity> gambaByUserId = gambaService.getGambaByUserId(userId);
+            return ResponseEntity.ok(gambaByUserId);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("{\"error\": \"Internal Server Error: " + e.getMessage() + "\"}");
+        }
+    }
+
     private GambaEntity createRandomGamba(String userId, String pokemonName, Pokemon pokemon) {
         Random random = new Random();
         List<String> types = Arrays.asList("Fire", "Water", "Grass", "Electric", "Ice", "Rock", "Ghost", "Dragon");

@@ -19,8 +19,10 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.security.PublicKey;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Random;
 
 @RestController
 public class GambaController {
@@ -43,24 +45,53 @@ public class GambaController {
 
             String userId = getUserIdFromToken(authHeader);
             if (userId.equals(ErrorCodes.TOKEN_EXTRACTION_ERROR.getCode())) {
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                        .body("{\"error\": \"Unable To Process Request: " + ErrorCodes.TOKEN_EXTRACTION_ERROR.getCode() + "\"}");
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("{\"error\": \"Unable To Process Request: " + ErrorCodes.TOKEN_EXTRACTION_ERROR.getCode() + "\"}");
             }
 
-            GambaEntity gamba = new GambaEntity();
-            gamba.setUserId(userId);
-            gamba.setPokemon_name(pokemons.get(0).getName());
-            gamba.setDate(new Date());
+            GambaEntity gamba = createRandomGamba(userId, pokemons.get(0).getName(), pokemons.get(0));
             gambaService.saveGamba(gamba);
 
-            return ResponseEntity.ok(pokemons);
+            return ResponseEntity.ok(gamba);
         } catch (WebClientResponseException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("{\"error\": \"Bad Request: " + e.getMessage() + "\"}");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"error\": \"Bad Request: " + e.getMessage() + "\"}");
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("{\"error\": \"Internal Server Error: " + e.getMessage() + "\"}");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("{\"error\": \"Internal Server Error: " + e.getMessage() + "\"}");
         }
+    }
+
+    private GambaEntity createRandomGamba(String userId, String pokemonName, Pokemon pokemon) {
+        Random random = new Random();
+        List<String> types = Arrays.asList("Fire", "Water", "Grass", "Electric", "Ice", "Rock", "Ghost", "Dragon");
+
+        GambaEntity gamba = new GambaEntity();
+        gamba.setUserId(userId);
+        gamba.setPokemonName(pokemonName);
+        gamba.setDate(new Date());
+        gamba.setFrontDefault(pokemon.getPictures().getFront_default());
+        gamba.setFrontShiny(pokemon.getPictures().getFront_shiny());
+
+        int baseHP = random.nextInt(150) + 50;
+        int baseAttack = random.nextInt(150) + 50;
+        int baseDefense = random.nextInt(150) + 50;
+        int baseSpeed = random.nextInt(150) + 50;
+
+        gamba.setBaseHP(baseHP);
+        gamba.setBaseAttack(baseAttack);
+        gamba.setBaseDefense(baseDefense);
+        gamba.setBaseSpeed(baseSpeed);
+
+        boolean isLegendary = random.nextInt(100) < 2;
+        gamba.setLegendary(isLegendary);
+
+        String type = types.get(random.nextInt(types.size()));
+        gamba.setType(type);
+
+        int rarityBoost = isLegendary ? 1000 : 0;
+
+        int totalRarity = baseHP + baseAttack + baseDefense + baseSpeed + rarityBoost + ((type.equals("Dragon") || type.equals("Ghost") ? +200 : +50));
+        gamba.setTotalRarity(totalRarity);
+
+        return gamba;
     }
 
     private String getUserIdFromToken(String authHeader) {
@@ -77,11 +108,7 @@ public class GambaController {
             return ErrorCodes.TOKEN_EXTRACTION_ERROR.getCode();
         }
 
-        Claims claims = Jwts.parser()
-                .verifyWith(publicKey)
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
+        Claims claims = Jwts.parser().verifyWith(publicKey).build().parseSignedClaims(token).getPayload();
 
         String userId = claims.get("user_id", String.class);
         if (userId == null) {

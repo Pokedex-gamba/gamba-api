@@ -12,7 +12,7 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/pokemon_gamba
       - SPRING_DATASOURCE_USERNAME=root
       - SPRING_DATASOURCE_PASSWORD=password
-      - POKEMON_API_URL=http://host.docker.internal:8888
+      - POKEMON_API_URL=http://host.docker.internal:8081
     depends_on:
       - db
     volumes:

@@ -21,7 +21,6 @@ public class PokemonService {
         return webClient.get()
                 .uri("/pokemon/get_random/1")
                 .header("Authorization", authHeader)
-                .header("Host", "pokemon-api.pokedex-gamba.internal")
                 .retrieve()
                 .bodyToFlux(Pokemon.class);
     }

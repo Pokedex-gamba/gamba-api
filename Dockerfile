@@ -1,9 +1,8 @@
-FROM openjdk:17-oracle
+FROM eclipse-temurin:21-alpine
 
 ARG JAR_FILE=target/*.jar
 
-EXPOSE 8889/tcp
-EXPOSE 3306/tcp
+EXPOSE 80/tcp
 
 COPY ${JAR_FILE} app.jar
 

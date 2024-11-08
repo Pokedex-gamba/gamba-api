@@ -63,7 +63,9 @@ public class GambaController {
             GambaEntity gamba = createRandomGamba(userId, pokemons.get(0).getName(), pokemons.get(0));
             gambaService.saveGamba(gamba);
 
-            return ResponseEntity.ok(gamba);
+            String responseMessage = pokemonService.sendRequestToInventory(authHeader, gamba).bodyToMono(String.class).block();
+
+            return ResponseEntity.ok(responseMessage);
         } catch (WebClientResponseException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"error\": \"Bad Request: " + e.getMessage() + "\"}");
         } catch (Exception e) {

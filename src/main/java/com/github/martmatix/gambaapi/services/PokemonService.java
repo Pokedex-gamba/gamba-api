@@ -1,5 +1,6 @@
 package com.github.martmatix.gambaapi.services;
 
+import com.github.martmatix.gambaapi.gamba.entities.GambaEntity;
 import com.github.martmatix.gambaapi.gamba.pokemon.Pokemon;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,6 +16,9 @@ public class PokemonService {
     @Value("${pokemon.api.url}")
     private String pokemonHost;
 
+    @Value("${inventory.api.url}")
+    private String inventoryHost;
+
     public Flux<Pokemon> getPokemon(String authHeader) {
         WebClient webClient = builder.baseUrl(pokemonHost).build();
 
@@ -23,6 +27,15 @@ public class PokemonService {
                 .header("Authorization", authHeader)
                 .retrieve()
                 .bodyToFlux(Pokemon.class);
+    }
+
+    public WebClient.ResponseSpec sendRequestToInventory(String authHeader, GambaEntity gamba) {
+        WebClient webClient = builder.baseUrl(inventoryHost).build();
+        return webClient.post()
+                .uri("/pokemon/inventory/saveGamba")
+                .header("Authorization", authHeader)
+                .bodyValue(gamba)
+                .retrieve();
     }
 
     @Autowired

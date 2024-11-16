@@ -36,7 +36,7 @@ public class SecurityConfig {
     public JwtAuthenticationConverter jwtAuthenticationConverter() {
         JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
         converter.setJwtGrantedAuthoritiesConverter(jwt -> {
-            List<String> roles = jwt.getClaimAsStringList("roles");
+            List<String> roles = jwt.getClaimAsStringList("grants");
             if (roles == null) {
                 return List.of();
             }

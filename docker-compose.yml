@@ -10,6 +10,7 @@ services:
       - SPRING_DATASOURCE_USERNAME=root
       - SPRING_DATASOURCE_PASSWORD=password
       - POKEMON_API_URL=http://host.docker.internal:8888
+      - INVENTORY_API_URL=http://host.docker.internal:8890
     depends_on:
       - db
     volumes:
@@ -19,6 +20,7 @@ services:
 
   db:
     image: mysql:8.0
+    build: ./database
     ports:
       - "3306:3306"
     environment:

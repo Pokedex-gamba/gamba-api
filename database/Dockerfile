@@ -1,2 +1,2 @@
 FROM mysql
-COPY test.sql /docker-entrypoint-initdb.d
+COPY initDatabase.sql /docker-entrypoint-initdb.d

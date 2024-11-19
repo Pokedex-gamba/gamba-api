@@ -8,6 +8,11 @@ import com.github.martmatix.gambaapi.services.KeyLoaderService;
 import com.github.martmatix.gambaapi.services.PokemonService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -35,6 +40,13 @@ public class GambaController {
     private KeyLoaderService keyLoaderService;
     private GambaService gambaService;
 
+    @ApiResponses(
+            value = {
+                    @ApiResponse(responseCode = "200",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = GambaEntity.class)))
+            }
+    )
     @GetMapping(path = "/pokemon/gamba/getRandomPokemon")
     public ResponseEntity<?> getRandomPokemon(@RequestHeader("Authorization") String authHeader) {
         try {
@@ -68,6 +80,13 @@ public class GambaController {
         }
     }
 
+    @ApiResponses(
+            value = {
+                    @ApiResponse(responseCode = "200",
+                            content = @Content(mediaType = "application/json",
+                                    array = @ArraySchema(schema = @Schema(implementation = GambaEntity.class))))
+            }
+    )
     @GetMapping(path = "/pokemon/gamba/getUserGamba")
     public ResponseEntity<?> getUserGamba(@RequestHeader("Authorization") String authHeader) {
         try {

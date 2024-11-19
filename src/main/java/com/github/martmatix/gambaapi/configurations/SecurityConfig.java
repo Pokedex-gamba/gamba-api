@@ -22,6 +22,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/pokemon/gamba/getRandomPokemon").hasAuthority("svc::pokemon_gamba::route::/pokemon/getRandomPokemon")
                         .requestMatchers("/pokemon/gamba/getUserGamba").hasAuthority("svc::pokemon_gamba::route::/pokemon/getUserGamba")
+                        .requestMatchers("/docs","/v3/api-docs").permitAll()
                 )
                 .csrf(AbstractHttpConfigurer::disable)
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> {

@@ -11,6 +11,7 @@ services:
       - SPRING_DATASOURCE_PASSWORD=password
       - POKEMON_API_URL=http://host.docker.internal:8888
       - INVENTORY_API_URL=http://host.docker.internal:8890
+      - SELF_API_HOST=http://host.docker.internal:8889
     depends_on:
       - db
     volumes:

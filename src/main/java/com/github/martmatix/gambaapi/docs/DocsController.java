@@ -15,12 +15,12 @@ public class DocsController {
 
     private WebClient.Builder builder;
 
-    @Value("${self.api.host}")
-    private String selfHost;
+    @Value("${server.port}")
+    private String serverPort;
 
     @GetMapping(path = "/docs")
     public String returnDocs(Model model) {
-        WebClient webClient = builder.baseUrl(selfHost).build();
+        WebClient webClient = builder.baseUrl("http://127.0.0.1:" + serverPort).build();
         Mono<String> stringMono = webClient.get()
                 .uri("/v3/api-docs")
                 .retrieve()

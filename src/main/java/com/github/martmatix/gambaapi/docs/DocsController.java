@@ -19,7 +19,7 @@ import java.util.Objects;
 @Controller
 @OpenAPIDefinition(
         info = @Info(title = "Inventory API"),
-        servers = {@Server(description = "Inventory Manager API Docs")}
+        servers = {@Server(description = "Gamba API Docs")}
 )
 public class DocsController {
 

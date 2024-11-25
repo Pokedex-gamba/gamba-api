@@ -1,5 +1,6 @@
 package com.github.martmatix.gambaapi.gamba.controllers;
 
+import com.github.martmatix.gambaapi.DTOs.UserWalletDTO;
 import com.github.martmatix.gambaapi.gamba.constants.ErrorCodes;
 import com.github.martmatix.gambaapi.gamba.entities.GambaEntity;
 import com.github.martmatix.gambaapi.gamba.pokemon.Pokemon;
@@ -19,6 +20,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -50,6 +52,16 @@ public class GambaController {
     @GetMapping(path = "/pokemon/gamba/getRandomPokemon")
     public ResponseEntity<?> getRandomPokemon(@RequestHeader("Authorization") String authHeader) {
         try {
+            WebClient.ResponseSpec moneySpec = gambaService.findMoney(authHeader);
+            Mono<UserWalletDTO> walletMono = moneySpec.bodyToMono(UserWalletDTO.class);
+            UserWalletDTO wallet = walletMono.block();
+            if (wallet == null) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("{\"error\": \"" + ErrorCodes.MONEY_MANAGER_RETRIEVE_FAILURE.getCode() + "\"}");
+            }
+            if (wallet.getBalance() < 25) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("{\"error\": \"" + ErrorCodes.INSUFFICIENT_FUNDS.getCode() + "\"}");
+            }
+
             Flux<Pokemon> pokemonFlux = pokemonService.getPokemon(authHeader);
             Mono<List<Pokemon>> pokemonMono = pokemonFlux.collectList();
 
@@ -69,6 +81,7 @@ public class GambaController {
 
             GambaEntity gamba = createRandomGamba(userId, pokemons.get(0).getName(), pokemons.get(0));
             gambaService.saveGamba(gamba);
+            gambaService.deductMoney(authHeader, -25).bodyToMono(String.class).block();
 
             String responseMessage = pokemonService.sendRequestToInventory(authHeader, gamba).bodyToMono(String.class).block();
 

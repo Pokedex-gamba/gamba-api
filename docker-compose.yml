@@ -11,6 +11,7 @@ services:
       - SPRING_DATASOURCE_PASSWORD=password
       - POKEMON_API_URL=http://host.docker.internal:8888
       - INVENTORY_API_URL=http://host.docker.internal:8890
+      - MONEY_MANAGER_API_URL=http://host.docker.internal:8893
     depends_on:
       - db
     volumes:

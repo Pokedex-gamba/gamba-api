@@ -23,7 +23,7 @@ public class GambaService {
     public WebClient.ResponseSpec findMoney(String authHeader) {
         WebClient webClient = builder.baseUrl(moneyManagerApiUrl).build();
         return webClient.get()
-                .uri("moneyManager/findUserWallet")
+                .uri("/findUserWallet")
                 .header(HttpHeaders.AUTHORIZATION, authHeader)
                 .retrieve();
     }
@@ -31,7 +31,7 @@ public class GambaService {
     public WebClient.ResponseSpec deductMoney(String authHeader, int balance) {
         WebClient webClient = builder.baseUrl(moneyManagerApiUrl).build();
         return webClient.get()
-                .uri("/moneyManager/modifyBalance/" + balance)
+                .uri("/modifyBalance/" + balance)
                 .header(HttpHeaders.AUTHORIZATION, authHeader)
                 .retrieve();
     }

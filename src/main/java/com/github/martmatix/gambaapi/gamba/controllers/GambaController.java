@@ -46,7 +46,21 @@ public class GambaController {
             value = {
                     @ApiResponse(responseCode = "200",
                             content = @Content(mediaType = "application/json",
-                                    schema = @Schema(implementation = GambaEntity.class)))
+                                    schema = @Schema(implementation = GambaEntity.class))),
+                    @ApiResponse(responseCode = "400",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(example = "{\"error\": \"Not Enough Coins!\"}"))),
+                    @ApiResponse(responseCode = "500",
+                            content = {
+                                    @Content(mediaType = "application/json",
+                                            schema = @Schema(example = "{\"error\": \"Unable To Retrieve Wallet From Money Manager Service\"}")),
+                                    @Content(mediaType = "application/json",
+                                            schema = @Schema(example = "{\"error\": \"Token Extraction Error\"}")),
+                                    @Content(mediaType = "application/json",
+                                            schema = @Schema(example = "{\"error\": \"Public Key 'decoding_key' Not Found\"}")),
+                                    @Content(mediaType = "application/json",
+                                            schema = @Schema(example = "{\"error\": \"Internal Server Error: Unexpected Failure\"}"))
+                            })
             }
     )
     @GetMapping(path = "/pokemon/gamba/getRandomPokemon")
@@ -59,7 +73,7 @@ public class GambaController {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("{\"error\": \"" + ErrorCodes.MONEY_MANAGER_RETRIEVE_FAILURE.getCode() + "\"}");
             }
             if (wallet.getBalance() < 25) {
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("{\"error\": \"" + ErrorCodes.INSUFFICIENT_FUNDS.getCode() + "\"}");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"error\": \"" + ErrorCodes.INSUFFICIENT_FUNDS.getCode() + "\"}");
             }
 
             Flux<Pokemon> pokemonFlux = pokemonService.getPokemon(authHeader);
@@ -87,7 +101,7 @@ public class GambaController {
 
             return ResponseEntity.ok(responseMessage);
         } catch (WebClientResponseException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"error\": \"Bad Request: " + e.getMessage() + "\"}");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("{\"error\": \"Bad Request: " + e.getMessage() + "\"}");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("{\"error\": \"Internal Server Error: " + e.getMessage() + "\"}");
         }
